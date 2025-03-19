@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema } from "@shared/schema";
 import session from "express-session";
 import passport from "passport";
-import { Strategy as LinkedInStrategy } from "passport-linkedin-oauth2";
+import { Strategy as OpenIDConnectStrategy } from "passport-openidconnect";
 
 // Debug logging
 console.log("Environment Variables:");
@@ -53,14 +53,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   passport.use(
-    new LinkedInStrategy(
+    new OpenIDConnectStrategy(
       {
+        issuer: "https://www.linkedin.com",
+        authorizationURL: "https://www.linkedin.com/oauth/v2/authorization",
+        tokenURL: "https://www.linkedin.com/oauth/v2/accessToken",
+        userInfoURL: "https://api.linkedin.com/v2/userinfo",
         clientID: LINKEDIN_CLIENT_ID,
         clientSecret: LINKEDIN_CLIENT_SECRET,
         callbackURL: CALLBACK_URL,
-        scope: ["r_liteprofile"], // Updated scope to only request basic profile access
+        scope: ["openid", "profile", "email"],
       },
-      async (accessToken, refreshToken, profile, done) => {
+      async (issuer: string, profile: any, done: any) => {
         console.log("Using callback URL:", CALLBACK_URL);
         try {
           let user = await storage.getUserByLinkedInId(profile.id);
@@ -68,11 +72,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (!user) {
             const userData = {
               linkedinId: profile.id,
-              accessToken,
-              name: profile.displayName,
-              email: profile.emails?.[0]?.value || "", // Make email optional since we're not requesting email scope
+              accessToken: profile.accessToken,
+              name: profile.displayName || profile.name?.formatted || "",
+              email: profile.email || "",
               profileData: {
-                headline: profile._json.headline || "",
+                headline: profile.headline || "",
                 summary: "",
                 positions: [],
                 education: [],
@@ -94,12 +98,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/linkedin", (req, res, next) => {
     console.log("Redirecting to LinkedIn with callback URL:", CALLBACK_URL);
-    passport.authenticate("linkedin")(req, res, next);
+    passport.authenticate("openidconnect")(req, res, next);
   });
 
   app.get(
     "/api/auth/linkedin/callback",
-    passport.authenticate("linkedin", {
+    passport.authenticate("openidconnect", {
       successRedirect: "/profile",
       failureRedirect: "/",
     }),
