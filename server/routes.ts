@@ -8,8 +8,8 @@ import { Strategy as LinkedInStrategy } from "passport-linkedin-oauth2";
 
 const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID || "";
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET || "";
-const CALLBACK_URL = process.env.REPL_SLUG 
-  ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/api/auth/linkedin/callback`
+const CALLBACK_URL = process.env.REPLIT_URL 
+  ? `https://${process.env.REPLIT_URL}/api/auth/linkedin/callback`
   : "http://localhost:5000/api/auth/linkedin/callback";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -63,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 summary: "",
                 positions: [],
                 education: [],
-                skills: [],
+                skills: []
               },
             };
 
@@ -79,7 +79,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ),
   );
 
-  app.get("/api/auth/linkedin", passport.authenticate("linkedin"));
+  app.get("/api/auth/linkedin", (req, res, next) => {
+    console.log("Redirecting to LinkedIn with callback URL:", CALLBACK_URL);
+    passport.authenticate("linkedin")(req, res, next);
+  });
 
   app.get(
     "/api/auth/linkedin/callback",
