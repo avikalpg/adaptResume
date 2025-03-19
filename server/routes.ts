@@ -9,7 +9,7 @@ import { Strategy as LinkedInStrategy } from "passport-linkedin-oauth2";
 const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID || "";
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET || "";
 const CALLBACK_URL = process.env.REPLIT_URL 
-  ? `https://${process.env.REPLIT_URL}/api/auth/linkedin/callback`
+  ? `${process.env.REPLIT_URL}/api/auth/linkedin/callback`
   : "http://localhost:5000/api/auth/linkedin/callback";
 
 export async function registerRoutes(app: Express): Promise<Server> {
