@@ -76,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: profile.displayName || profile.name?.formatted || "",
               email: profile.email || "",
               profileData: {
-                headline: profile.headline || "",
+                headline: "",
                 summary: "",
                 positions: [],
                 education: [],
