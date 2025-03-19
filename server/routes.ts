@@ -6,11 +6,24 @@ import session from "express-session";
 import passport from "passport";
 import { Strategy as LinkedInStrategy } from "passport-linkedin-oauth2";
 
+// Debug logging
+console.log("Environment Variables:");
+console.log("REPLIT_URL:", process.env.REPLIT_URL);
+console.log("REPL_ID:", process.env.REPL_ID);
+console.log("REPL_OWNER:", process.env.REPL_OWNER);
+console.log("REPL_SLUG:", process.env.REPL_SLUG);
+console.log("LINKEDIN_CLIENT_ID:", process.env.LINKEDIN_CLIENT_ID);
+console.log("LINKEDIN_CLIENT_SECRET:", process.env.LINKEDIN_CLIENT_SECRET);
+console.log("SESSION_SECRET:", process.env.SESSION_SECRET);
+
 const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID || "";
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET || "";
 const CALLBACK_URL = process.env.REPLIT_URL 
   ? `${process.env.REPLIT_URL}/api/auth/linkedin/callback`
   : "http://localhost:5000/api/auth/linkedin/callback";
+
+console.log("Final Callback URL:", CALLBACK_URL);
+console.log("LinkedIn Client ID length:", LINKEDIN_CLIENT_ID.length);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
