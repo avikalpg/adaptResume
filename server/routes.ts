@@ -8,7 +8,7 @@ import { Strategy as LinkedInStrategy } from "passport-linkedin-oauth2";
 
 // Debug logging
 console.log("Environment Variables:");
-console.log("REPLIT_URL:", process.env.REPLIT_URL);
+console.log("CALLBACK_URL:", process.env.CALLBACK_URL);
 console.log("REPL_ID:", process.env.REPL_ID);
 console.log("REPL_OWNER:", process.env.REPL_OWNER);
 console.log("REPL_SLUG:", process.env.REPL_SLUG);
@@ -18,8 +18,8 @@ console.log("SESSION_SECRET:", process.env.SESSION_SECRET);
 
 const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID || "";
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET || "";
-const CALLBACK_URL = process.env.REPLIT_URL 
-  ? `${process.env.REPLIT_URL}/api/auth/linkedin/callback`
+const CALLBACK_URL = process.env.CALLBACK_URL
+  ? process.env.CALLBACK_URL
   : "http://localhost:5000/api/auth/linkedin/callback";
 
 console.log("Final Callback URL:", CALLBACK_URL);
@@ -58,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         clientID: LINKEDIN_CLIENT_ID,
         clientSecret: LINKEDIN_CLIENT_SECRET,
         callbackURL: CALLBACK_URL,
-        scope: ["r_liteprofile", "r_emailaddress"],
+        scope: ["r_liteprofile"], // Updated scope to only request basic profile access
       },
       async (accessToken, refreshToken, profile, done) => {
         console.log("Using callback URL:", CALLBACK_URL);
@@ -70,13 +70,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               linkedinId: profile.id,
               accessToken,
               name: profile.displayName,
-              email: profile.emails[0].value,
+              email: profile.emails?.[0]?.value || "", // Make email optional since we're not requesting email scope
               profileData: {
                 headline: profile._json.headline || "",
                 summary: "",
                 positions: [],
                 education: [],
-                skills: []
+                skills: [],
               },
             };
 
